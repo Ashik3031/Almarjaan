@@ -56,7 +56,7 @@ export const Navbar = () => {
     <header className="w-full z-50 text-sm bg-white">
       {/* Utility Strip */}
       <div className="bg-[#f4f4f4] text-center text-gray-600 py-2">
-        Complimentary Delivery | Find a Boutique | Customer Service | EN
+        Complimentary Delivery | lip@loveinparis.ae | Customer Service | UAE
       </div>
 
       {/* Main Bar */}
