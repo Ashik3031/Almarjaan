@@ -3,12 +3,15 @@ import React from "react";
 const AboutSection = () => {
   return (
     <section className="flex flex-col md:flex-row items-stretch w-full min-h-[500px]">
-      {/* Left - Image */}
-      <div className="w-full md:w-1/2">
-        <img
-          src="https://res.cloudinary.com/dsfgakhl4/image/upload/v1750488653/perfume-bottle-nature_3_nhpmen.jpg" // replace with your own Cloudinary image if needed
-          alt="Ceramics Expertise"
+      {/* Left - Video */}
+      <div className="w-full md:w-1/2 relative overflow-hidden">
+        <video
+          src="https://res.cloudinary.com/dugtxybef/video/upload/v1762855174/IMG_8518_ortqmi.mov" // replace with your video URL
           className="w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
         />
       </div>
 
@@ -22,7 +25,7 @@ const AboutSection = () => {
             CERAMIC EXPERTISE
           </h2>
           <p className="text-sm text-gray-600 leading-relaxed mb-6 max-w-md mx-auto">
-            Al Marjaan’s signature ceramic designs highlight the expertise of skilled artisans from our partnered workshops in the UAE and abroad, blending tradition and innovation with every sculpted form.
+            Al Marjaan's signature ceramic designs highlight the expertise of skilled artisans from our partnered workshops in the UAE and abroad, blending tradition and innovation with every sculpted form.
           </p>
           <a
             href="/about-us"

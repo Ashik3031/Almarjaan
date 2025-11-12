@@ -24,6 +24,8 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Divider,
+  Collapse,
 } from "@mui/material";
 import {
   addToCartAsync,
@@ -46,6 +48,7 @@ import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined
 import CachedOutlinedIcon from "@mui/icons-material/CachedOutlined";
 import Favorite from "@mui/icons-material/Favorite";
 import InventoryIcon from "@mui/icons-material/Inventory";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
   createWishlistItemAsync,
   deleteWishlistItemByIdAsync,
@@ -80,13 +83,13 @@ export const ProductDetails = () => {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [expandedSection, setExpandedSection] = useState(null);
 
   const theme = useTheme();
   const is480 = useMediaQuery(theme.breakpoints.down(480));
   const is840 = useMediaQuery(theme.breakpoints.down(840));
   const is990 = useMediaQuery(theme.breakpoints.down(990));
   const is1420 = useMediaQuery(theme.breakpoints.down(1420));
-  const is387 = useMediaQuery(theme.breakpoints.down(387));
 
   const totalReviewRating = reviews.reduce((acc, review) => acc + review.rating, 0);
   const totalReviews = reviews.length;
@@ -167,158 +170,254 @@ export const ProductDetails = () => {
     }
   };
 
+  const toggleSection = (section) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const ExpandableSection = ({ title, children }) => {
+    const isExpanded = expandedSection === title;
+    
+    return (
+      <Box>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          onClick={() => toggleSection(title)}
+          sx={{
+            cursor: "pointer",
+            py: 2,
+            "&:hover": { opacity: 0.7 },
+            transition: "opacity 0.2s",
+          }}
+        >
+          <Typography variant="body1">{title}</Typography>
+          <KeyboardArrowRightIcon
+            sx={{
+              transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 0.3s",
+            }}
+          />
+        </Stack>
+        <Collapse in={isExpanded}>
+          <Box pb={2}>{children}</Box>
+        </Collapse>
+        <Divider />
+      </Box>
+    );
+  };
+
   return (
     <>
       {(productFetchStatus !== "rejected" || reviewFetchStatus !== "rejected") && (
-        <Stack alignItems="center" mb="2rem" rowGap="2rem">
+        <Stack alignItems="center" mb="4rem">
           {(productFetchStatus || reviewFetchStatus) === "pending" ? (
             <Stack height="calc(100vh - 4rem)" justifyContent="center" alignItems="center">
               <Lottie animationData={loadingAnimation} style={{ width: "20rem" }} />
             </Stack>
           ) : (
-            <Stack>
+            <Stack width="100%">
               <Stack
-                width={is480 ? "auto" : is1420 ? "auto" : "88rem"}
-                height={is840 ? "auto" : "50rem"}
-                p={is480 ? 2 : 0}
-                mt={is840 ? 0 : 5}
-                mb={5}
+                width="100%"
+                maxWidth="1400px"
+                margin="0 auto"
+                p={is480 ? 2 : 4}
+                mt={is840 ? 0 : 2}
+                mb={8}
                 flexDirection={is840 ? "column" : "row"}
-                columnGap={is990 ? "2rem" : "5rem"}
+                columnGap="4rem"
               >
                 {/* Image Section */}
-                <Stack flexDirection="row" columnGap="2.5rem">
-                  {!is1420 && (
-                    <Stack rowGap="1.5rem" overflowY="scroll">
-                      {product?.images.map((img, i) => (
-                        <motion.div
-                          key={i}
-                          whileHover={{ scale: 1.1 }}
-                          onClick={() => setSelectedImageIndex(i)}
-                          style={{ width: "200px", cursor: "pointer" }}
-                        >
-                          <img src={img} alt={product.title} style={{ width: "100%" }} />
-                        </motion.div>
-                      ))}
-                    </Stack>
-                  )}
-
-                  <Stack mt={is480 ? 0 : "5rem"}>
+                <Stack 
+                  flex={is840 ? "1" : "0 0 55%"} 
+                  flexDirection="row" 
+                  columnGap="1rem"
+                  position="relative"
+                >
+                  <Stack 
+                    width="100%" 
+                    alignItems="center"
+                    justifyContent="center"
+                  >
                     {is1420 ? (
-                      <Stack width={is480 ? "100%" : is990 ? "400px" : "500px"}>
+                      <Box width="100%" maxWidth="600px">
                         <ImageSlider images={product?.images || []} />
-                      </Stack>
+                      </Box>
                     ) : (
-                      <div style={{ width: "70%" }}>
+                      <Box 
+                        width="100%" 
+                        maxWidth="600px"
+                        display="flex"
+                        justifyContent="center"
+                      >
                         <img
                           src={product?.images[selectedImageIndex]}
                           alt={product?.title}
                           style={{
                             width: "100%",
+                            height: "auto",
                             objectFit: "contain",
-                            aspectRatio: 1 / 0.8,
-                            maxHeight: "650px",
-                            margin: "0 auto",
-                            display: "block",
+                            maxHeight: "700px",
                           }}
                         />
-                      </div>
+                      </Box>
+                    )}
+                    
+                    {!is1420 && product?.images.length > 1 && (
+                      <Stack 
+                        direction="row" 
+                        gap="0.5rem" 
+                        mt={3}
+                        justifyContent="center"
+                      >
+                        {product?.images.map((_, i) => (
+                          <Box
+                            key={i}
+                            onClick={() => setSelectedImageIndex(i)}
+                            sx={{
+                              width: "10px",
+                              height: "10px",
+                              borderRadius: "50%",
+                              backgroundColor: selectedImageIndex === i ? "black" : "#ddd",
+                              cursor: "pointer",
+                              transition: "all 0.3s ease",
+                            }}
+                          />
+                        ))}
+                      </Stack>
                     )}
                   </Stack>
                 </Stack>
 
                 {/* Product Info */}
-                <Stack rowGap="1.5rem" width={is480 ? "100%" : "25rem"}>
-                  <Stack rowGap=".5rem">
-                    <Typography variant="h4" fontWeight={600}>{product?.title}</Typography>
-                    <Stack direction="row" gap="1rem" flexWrap="wrap" alignItems="center">
-                      <Rating value={averageRating} readOnly />
-                      <Typography>
-                        ({totalReviews === 0 ? "No reviews" : `${totalReviews} Reviews`})
-                      </Typography>
-                      <Typography color={totalStock === 0 ? "error" : totalStock <= 10 ? "orange" : "green"}>
-                        {totalStock === 0
-                          ? "Out of Stock"
-                          : totalStock <= 10
-                          ? `Only ${totalStock} left`
-                          : "In Stock"}
-                      </Typography>
-                    </Stack>
-                    <Typography variant="h5">AED {product?.price}</Typography>
+                <Stack 
+                  flex={is840 ? "1" : "0 0 40%"} 
+                  rowGap="2rem" 
+                  mt={is840 ? 4 : 0}
+                >
+                  {/* Title and Product Info */}
+                  <Stack rowGap="1rem">
+                    <Typography 
+                      variant={is480 ? "h5" : "h4"} 
+                      fontWeight={400}
+                      letterSpacing="0.02em"
+                      sx={{ fontFamily: "'Playfair Display', serif" }}
+                    >
+                      {product?.title}
+                    </Typography>
+                    
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ fontStyle: "italic" }}
+                    >
+                      {product?.category || product?.brand}
+                    </Typography>
                   </Stack>
 
-                  <Typography>{product?.description}</Typography>
+                  {/* Price and Stock */}
+                  <Stack direction="row" alignItems="center" gap={2}>
+                    <Typography variant="h6" fontWeight={400}>
+                      AED {product?.price}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color={totalStock === 0 ? "error" : totalStock <= 10 ? "orange" : "success.main"}
+                    >
+                      {totalStock === 0
+                        ? "Out of Stock"
+                        : totalStock <= 10
+                        ? `Only ${totalStock} left`
+                        : "In Stock"}
+                    </Typography>
+                  </Stack>
 
                   {!loggedInUser?.isAdmin && (
-                    <Stack rowGap="1.3rem" width="fit-content">
-                      <Stack direction="row" gap="1.5rem" alignItems="center">
-                        <MotionConfig whileHover={{ scale: 1.05 }} whileTap={{ scale: 1 }}>
-                          <motion.button
-                            onClick={handleDecreaseQty}
-                            style={{
-                              padding: "10px 15px",
-                              border: "1px solid black",
-                              borderRadius: "8px",
-                              background: "white",
-                            }}
-                          >
-                            -
-                          </motion.button>
-                          <p style={{ fontSize: "1.1rem", margin: "0 1rem" }}>{quantity}</p>
-                          <motion.button
-                            onClick={handleIncreaseQty}
-                            style={{
-                              padding: "10px 15px",
-                              backgroundColor: "black",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "8px",
-                            }}
-                          >
-                            +
-                          </motion.button>
-                        </MotionConfig>
-
-                        {isProductAlreadyInCart ? (
-                          <button style={{ padding: "10px 15px", backgroundColor: "black", color: "white", borderRadius: "8px" }}>
-                            In Cart
-                          </button>
-                        ) : (
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 1 }}
-                            onClick={handleAddToCart}
-                            disabled={totalStock <= 0}
-                            style={{
-                              padding: "10px 15px",
-                              backgroundColor: totalStock <= 0 ? "gray" : "black",
-                              color: "white",
-                              borderRadius: "8px",
-                              border: "none",
-                              cursor: totalStock <= 0 ? "not-allowed" : "pointer",
-                            }}
-                          >
-                            {totalStock <= 0 ? "Out of Stock" : "Add to Cart"}
-                          </motion.button>
-                        )}
+                    <>
+                      {/* Add to Cart Section */}
+                      <Stack direction="row" gap={2} alignItems="center" flexWrap="wrap">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleAddToCart}
+                          disabled={totalStock <= 0 || isProductAlreadyInCart}
+                          style={{
+                            padding: "14px 40px",
+                            backgroundColor: totalStock <= 0 || isProductAlreadyInCart ? "#e0e0e0" : "black",
+                            color: totalStock <= 0 || isProductAlreadyInCart ? "#999" : "white",
+                            border: "none",
+                            cursor: totalStock <= 0 || isProductAlreadyInCart ? "not-allowed" : "pointer",
+                            fontSize: "0.95rem",
+                            letterSpacing: "0.5px",
+                            transition: "all 0.3s ease",
+                          }}
+                        >
+                          {isProductAlreadyInCart ? "In Cart" : totalStock <= 0 ? "Out of Stock" : `Add to bag · AED ${product?.price}`}
+                        </motion.button>
 
                         <Checkbox
                           checked={isProductAlreadyinWishlist}
                           onChange={handleAddRemoveFromWishlist}
-                          icon={<FavoriteBorder />}
-                          checkedIcon={<Favorite sx={{ color: "red" }} />}
+                          icon={<FavoriteBorder sx={{ fontSize: "1.8rem" }} />}
+                          checkedIcon={<Favorite sx={{ color: "red", fontSize: "1.8rem" }} />}
                         />
                       </Stack>
-                    </Stack>
+
+                      {/* Reserve in boutique link */}
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                          width: "fit-content",
+                          "&:hover": { opacity: 0.7 }
+                        }}
+                      >
+                        Reserve in a boutique
+                      </Typography>
+
+                      {/* Features */}
+                      <Stack gap={1.5} mt={2}>
+                        <Stack direction="row" gap={1.5} alignItems="center">
+                          <KeyboardArrowRightIcon fontSize="small" />
+                          <Typography variant="body2">Free Returns</Typography>
+                        </Stack>
+                        <Stack direction="row" gap={1.5} alignItems="center">
+                          <KeyboardArrowRightIcon fontSize="small" />
+                          <Typography variant="body2">2 free samples of your choice with every order</Typography>
+                        </Stack>
+                      </Stack>
+
+                      {/* Expandable Sections */}
+                      <Stack mt={3}>
+                        <ExpandableSection title="Description">
+                          <Typography variant="body2" color="text.secondary" lineHeight={1.8}>
+                            {product?.description}
+                          </Typography>
+                        </ExpandableSection>
+
+                        <ExpandableSection title="Refillable bottle">
+                          <Typography variant="body2" color="text.secondary" lineHeight={1.8}>
+                            Our iconic fragrance bottles can be refilled at certain stores. Simply take your empty bottle to a participating Diptyque store to refill it.
+                          </Typography>
+                        </ExpandableSection>
+
+                        <ExpandableSection title="Ingredients">
+                          <Typography variant="body2" color="text.secondary" lineHeight={1.8}>
+                            {product?.ingredients || "Premium ingredients carefully selected for quality and performance."}
+                          </Typography>
+                        </ExpandableSection>
+                      </Stack>
+                    </>
                   )}
 
-                  {loggedInUser?.isAdmin ? (
-                    <Stack mt={3} border="1px solid gray" borderRadius="7px">
-                      <Stack p={2}>
+                  {loggedInUser?.isAdmin && (
+                    <Stack mt={3} border="1px solid #e0e0e0" borderRadius="0px">
+                      <Stack p={3}>
                         <Typography variant="h6" display="flex" alignItems="center" mb={2}>
                           <InventoryIcon sx={{ mr: 1 }} /> Stock Per Variant
                         </Typography>
-                        <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                        <TableContainer component={Paper} sx={{ maxHeight: 300, boxShadow: "none" }}>
                           <Table size="small">
                             <TableHead>
                               <TableRow>
@@ -344,30 +443,12 @@ export const ProductDetails = () => {
                         </TableContainer>
                       </Stack>
                     </Stack>
-                  ) : (
-                    <Stack mt={3} border="1px solid gray" borderRadius="7px">
-                      <Stack p={2} direction="row" gap="1rem" alignItems="center">
-                        <LocalShippingOutlinedIcon />
-                        <Stack>
-                          <Typography>Free Delivery</Typography>
-                          <Typography>Enter your postal code for delivery availability</Typography>
-                        </Stack>
-                      </Stack>
-                      <hr />
-                      <Stack p={2} direction="row" gap="1rem" alignItems="center">
-                        <CachedOutlinedIcon />
-                        <Stack>
-                          <Typography>Return Delivery</Typography>
-                          <Typography>Free 30 Days Delivery Returns</Typography>
-                        </Stack>
-                      </Stack>
-                    </Stack>
                   )}
                 </Stack>
               </Stack>
 
               {/* Reviews */}
-              <Stack width={is1420 ? "auto" : "88rem"} p={is480 ? 2 : 0}>
+              <Stack width="100%" maxWidth="1400px" margin="0 auto" p={is480 ? 2 : 4}>
                 <Reviews productId={id} averageRating={averageRating} />
               </Stack>
             </Stack>

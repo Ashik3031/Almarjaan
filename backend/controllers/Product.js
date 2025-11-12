@@ -93,64 +93,48 @@ exports.create = async (req, res) => {
       stockQuantity,
     } = req.body;
 
-
-    if (
-      !title ||
-      !description ||
-      !price ||
-      !category ||
-      !subCategory ||
-      !stockQuantity
-    ) {
-      return res.status(400).json({ message: "All fields are required" });
+    if (!title || !description || !price || !stockQuantity) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (isNaN(price) || isNaN(discountPercentage)) {
-      return res
-        .status(400)
-        .json({ message: "Price and discountPercentage must be numbers" });
+    if (isNaN(price) || (discountPercentage && isNaN(discountPercentage))) {
+      return res.status(400).json({
+        message: "Price and discountPercentage must be numbers",
+      });
     }
 
-
-    // Validate subcategory
-    const validSubCategory = await SubCategory.findOne({
-      _id: subCategory,
-      category,
-    });
-
-    if (!validSubCategory) {
-      return res
-        .status(400)
-        .json({ message: "SubCategory does not belong to the given category" });
-    }
-
-    // Files from Multer
-    const thumbnailFile = req.files["thumbnail"]?.[0];
-    const imageFiles = req.files["images"] || [];
+    // Files (multer .fields)
+    const thumbnailFile = req.files?.["thumbnail"]?.[0];
+    const imageFiles = req.files?.["images"] || [];
+    const videoFile = req.files?.["video"]?.[0]; // NEW
 
     const thumbnail = thumbnailFile?.path;
     const images = imageFiles.map((file) => file.path);
+    const video = videoFile?.path || null; // NEW
 
     const newProduct = new Product({
       title,
       description,
       price: parseFloat(price),
-      discountPercentage: parseFloat(discountPercentage),
-      category,
-      subcategory: subCategory,
-      stockQuantity: parseInt(stockQuantity),
+      discountPercentage: parseFloat(discountPercentage || 0),
+      // category: category || null,
+      // subcategory: subCategory || null,
+      stockQuantity: parseInt(stockQuantity, 10),
       thumbnail,
       images,
+      video, // NEW
     });
 
     await newProduct.save();
-
     res.status(201).json(newProduct);
   } catch (error) {
     console.error("Error creating product:", error);
-    res.status(500).json({ message: "Error adding product, please try again later" });
+    res
+      .status(500)
+      .json({ message: "Error adding product, please try again later" });
   }
 };
+
 
 
 exports.getAll = async (req, res) => {
@@ -548,3 +532,102 @@ exports.searchProducts = async (req, res) =>{
     res.status(500).json({message:"Server error", error});
   }
 }
+
+exports.getFeaturedProducts = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page || "1", 10);
+    const limit = parseInt(req.query.limit || "10", 10);
+    const skip = (page - 1) * limit;
+
+    const filter = { isFeatured: true, isDeleted: { $ne: true } };
+
+    const [items, totalCount] = await Promise.all([
+      Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Product.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      data: items,
+      totalCount,
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / limit),
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error fetching featured products, please try again later" });
+  }
+};
+
+exports.getLatestProducts = async (req, res) => {
+  const categoryName = req.params.category;
+  try {
+    const category = await Category.findOne({ name: categoryName });
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    const products = await Product.find({
+      category: category._id,
+      isDeleted: { $ne: true },
+    })
+      .sort({ createdAt: -1 })
+      .limit(10);
+    res.json(products);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error Fetching Products, Please try again later" });
+  }
+};
+
+exports.featuredProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const current = await Product.findById(id);
+    if (!current) return res.status(404).json({ message: "Product not found" });
+    const updated = await Product.findByIdAndUpdate(
+      id,
+      { isFeatured: !current.isFeatured },
+      { new: true }
+    );
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error Fetching Product, Please try again later" });
+  }
+};
+
+exports.getProductSuggestions = async (req, res) => {
+  try {
+    const { query } = req.params;
+    if (!query || query.trim().length < 2) {
+      return res.json([]);
+    }
+    const suggestions = await Product.find({
+      title: { $regex: query, $options: "i" },
+      isDeleted: { $ne: true },
+    })
+      .limit(5)
+      .select("title description");
+    res.json(suggestions);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error Fetching Suggestions, Please try again Later" });
+  }
+};
+
+exports.searchProducts = async (req, res) => {
+  try {
+    const q = req.query.q;
+    if (!q) return res.status(400).json({ message: "Query is required" });
+    const regex = new RegExp(String(q).trim(), "i");
+    const products = await Product.find({
+      isDeleted: { $ne: true },
+      $or: [{ title: regex }, { description: regex }],
+    }).sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};

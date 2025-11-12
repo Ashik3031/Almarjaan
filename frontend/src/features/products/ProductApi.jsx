@@ -6,15 +6,14 @@ export const addProduct = async (data) => {
     const res = await axiosi.post("/products", data);
     return res.data;
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
 
-
-export const fetchProducts = async (filters) => {
+export const fetchProducts = async (filters = {}) => {
   let queryString = "";
 
-  if (filters.isFeatured) {
+  if (filters.isFeatured !== undefined) {
     queryString += `isFeatured=${filters.isFeatured}&`;
   }
 
@@ -24,12 +23,12 @@ export const fetchProducts = async (filters) => {
     });
   }
 
-  //newly added: lunu
   if (filters.subcategory) {
     filters.subcategory.forEach((subcat) => {
       queryString += `subCategory=${subcat}&`;
     });
   }
+
   if (filters.pagination) {
     queryString += `page=${filters.pagination.page}&limit=${filters.pagination.limit}&`;
   }
@@ -42,23 +41,38 @@ export const fetchProducts = async (filters) => {
     queryString += `user=${filters.user}&`;
   }
 
+  if (filters.search) {
+    queryString += `search=${encodeURIComponent(filters.search)}&`;
+  }
+
   try {
     const res = await axiosi.get(`/products?${queryString}`);
-    // const totalResults = await res.headers.get("X-Total-Count");
-    const totalResults = res.headers["x-total-count"];
-    return { data: res.data, totalResults: totalResults };
+    const totalResults =
+      res.headers?.["x-total-count"] ??
+      res.headers?.["X-Total-Count"] ??
+      null;
+    return { data: res.data, totalResults };
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
 
+export const fetchFeaturedProducts = async ({ page = 1, limit = 6 } = {}) => {
+  try {
+    const res = await axiosi.get(`/products/featured?page=${page}&limit=${limit}`);
+    // Backend returns: { data: [...], totalCount, currentPage, totalPages }
+    return res.data;
+  } catch (error) {
+    throw (error.response?.data || error.message);
+  }
+};
 
 export const fetchProductById = async (id) => {
   try {
     const res = await axiosi.get(`/products/${id}`);
     return res.data;
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
 
@@ -67,16 +81,16 @@ export const updateProductById = async (update) => {
     const res = await axiosi.patch(`/products/${update.get("_id")}`, update);
     return res.data;
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
-// Soft delete (hide)
+
 export const softDeleteProductById = async (id) => {
   try {
     const res = await axiosi.patch(`/products/hide/${id}`);
     return res.data;
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
 
@@ -85,15 +99,16 @@ export const undeleteProductById = async (id) => {
     const res = await axiosi.patch(`/products/unhide/${id}`);
     return res.data;
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
+
 export const deleteProductById = async (id) => {
   try {
     const res = await axiosi.delete(`/products/${id}`);
     return res.data;
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
 
@@ -102,7 +117,7 @@ export const toggleProductFeatured = async (id, isFeatured) => {
     const res = await axiosi.patch(`/products/featured/${id}`, { isFeatured });
     return res.data;
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
 
@@ -111,15 +126,15 @@ export const fetchProductSuggestions = async (query) => {
     const res = await axiosi.get(`/products/suggestions/${query}`);
     return res.data;
   } catch (error) {
-    throw error.response.data;
+    throw (error.response?.data || error.message);
   }
 };
 
 export const fetchSearchResults = async (query) => {
   try {
-    const res = await axiosi.get(`/products/search?q=${query}`);
+    const res = await axiosi.get(`/products/search?q=${encodeURIComponent(query)}`);
     return res.data;
   } catch (error) {
-    throw error.response?.data || error.message;
+    throw (error.response?.data || error.message);
   }
 };

@@ -5,7 +5,7 @@ const ProductBanner = () => {
       <div className="w-full md:w-3/5 mb-8 md:mb-0">
         <div className="w-full h-[350px] md:h-[500px]">
           <img
-            src="https://res.cloudinary.com/dsfgakhl4/image/upload/v1750756891/ChatGPT_Image_Jun_24_2025_01_18_25_PM_eabzoc.png"
+            src="https://res.cloudinary.com/dugtxybef/image/upload/v1762854142/IMG_8579.jpg-fine_1_nuy6ki.jpg"
             alt="The Scents of Summer"
             className="w-full h-full object-cover"
           />

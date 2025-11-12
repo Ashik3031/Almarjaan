@@ -23,12 +23,12 @@ const productSchema = new Schema(
     category: {
       type: Schema.Types.ObjectId,
       ref: "Category",
-      required: true,
+      required: false,
     },
     subcategory: {
       type: Schema.Types.ObjectId,
       ref: "subcategory",
-      required: true,
+      required: false,
     },
     stockQuantity: {
       type: Number,
@@ -42,6 +42,11 @@ const productSchema = new Schema(
       type: [String],
       required: true,
     },
+    video: {
+       type: String, 
+       required: false, 
+       default: null 
+      },
     isFeatured: { type: Boolean, default: false },
     isDeleted: {
       type: Boolean,

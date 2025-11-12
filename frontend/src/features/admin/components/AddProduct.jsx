@@ -29,6 +29,7 @@ export const AddProduct = () => {
     reset,
     formState: { errors },
   } = useForm();
+
   const dispatch = useDispatch();
   const categories = useSelector(selectCategories) || [];
   const productAddStatus = useSelector(selectProductAddStatus);
@@ -39,21 +40,20 @@ export const AddProduct = () => {
 
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [subCategories, setSubCategories] = useState([]);
-  // const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
-  // const [uploadingImages, setUploadingImages] = useState({});
-  // const [thumbnail, setThumbnail] = useState("");
-  // const [isAnyImageUploading, setIsAnyImageUploading] = useState(false);
 
-  //lunu
+  // media state
   const [thumbnail, setThumbnail] = useState(null);
   const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
+  const [video, setVideo] = useState(null); // NEW
 
   const isLoading = productAddStatus === "pending";
 
-  // Handle product addition status
   useEffect(() => {
     if (productAddStatus === "fullfilled") {
       reset();
+      setThumbnail(null);
+      setUploadedImageUrls([]);
+      setVideo(null);
       toast.success("New product added");
       navigate("/admin/dashboard");
     } else if (productAddStatus === "rejected") {
@@ -61,7 +61,6 @@ export const AddProduct = () => {
     }
   }, [productAddStatus, navigate, reset]);
 
-  // Cleanup on component unmount
   useEffect(() => {
     return () => {
       dispatch(resetProductAddStatus());
@@ -75,73 +74,25 @@ export const AddProduct = () => {
     setSubCategories(category?.subCategory || []);
   };
 
-  // const handleFileUpload = useCallback(async (file, index, isThumbnail = false) => {
-  //   if (!file) return;
-  //   try {
-  //     setUploadingImages((prev) => ({ ...prev, [index]: true }));
-  //     setIsAnyImageUploading(true);
-
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-  //     formData.append("upload_preset", "first_time_cloudinary");
-  //     formData.append("cloud_name", "dlgy2avhv");
-
-  //     const response = await fetch("https://api.cloudinary.com/v1_1/dlgy2avhv/image/upload", {
-  //       method: "POST",
-  //       body: formData,
-  //     });
-
-  //     if (!response.ok) throw new Error("Image upload failed");
-  //     const result = await response.json();
-
-  //     if (isThumbnail) {
-  //       setThumbnail(result.url);
-  //     } else {
-  //       setUploadedImageUrls((prev) => [...prev, result.url]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error uploading file:", error);
-  //     toast.error("Failed to upload image");
-  //   } finally {
-  //     setUploadingImages((prev) => ({ ...prev, [index]: false }));
-  //     setIsAnyImageUploading(Object.values(uploadingImages).some((status) => status));
-  //   }
-  // }, [uploadingImages]);
-
-  // const handleAddProduct = (data) => {
-  //   if (isAnyImageUploading) {
-  //     toast.warning("Please wait for images to finish uploading.");
-  //     return;
-  //   }
-
-  //   const newProduct = {
-  //     ...data,
-  //     images: uploadedImageUrls,
-  //     thumbnail,
-  //   };
-  //   dispatch(addProductAsync(newProduct));
-  // };
-
   const handleAddProduct = (data) => {
     const formData = new FormData();
-
     formData.append("title", data.title);
     formData.append("description", data.description);
     formData.append("price", data.price);
     formData.append("discountPercentage", data.discountPercentage);
-    formData.append("category", data.category);
-    formData.append("subCategory", data.subCategory);
+    formData.append("category", data.category || "");
+    formData.append("subCategory", data.subCategory || "");
     formData.append("stockQuantity", data.stockQuantity);
 
-    // Append thumbnail
-    if (thumbnail) {
-      formData.append("thumbnail", thumbnail);
-    }
-
-    // Append other images
-    uploadedImageUrls.forEach((imageFile, index) => {
-      formData.append("images", imageFile); // name must match backend multer field
+    if (thumbnail) formData.append("thumbnail", thumbnail);
+    uploadedImageUrls.forEach((imageFile) => {
+      formData.append("images", imageFile);
     });
+
+    // NEW: append video (optional)
+    if (video) {
+      formData.append("video", video);
+    }
 
     dispatch(addProductAsync(formData));
   };
@@ -157,7 +108,6 @@ export const AddProduct = () => {
         noValidate
         onSubmit={handleSubmit(handleAddProduct)}
       >
-        {/* Product Name */}
         <TextField
           label="Product Name"
           {...register("title", { required: "Title is required" })}
@@ -165,44 +115,6 @@ export const AddProduct = () => {
           helperText={errors.title?.message}
         />
 
-        {/* Category and Sub Category */}
-        <Stack direction={is480 ? "column" : "row"} spacing={2}>
-          <FormControl fullWidth>
-            <InputLabel>Category</InputLabel>
-            <Select
-              {...register("category", { required: "Category is required" })}
-              value={selectedCategoryId}
-              onChange={handleCategoryChange}
-              error={!!errors.category}
-              label="Category"
-            >
-              {categories.map((category) => (
-                <MenuItem key={category._id} value={category._id}>
-                  {category.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel>Sub Category</InputLabel>
-            <Select
-              {...register("subCategory", {
-                required: "Sub Category is required",
-              })}
-              disabled={!selectedCategoryId}
-              label="Sub Category"
-            >
-              {subCategories.map((subCat) => (
-                <MenuItem key={subCat._id} value={subCat._id}>
-                  {subCat.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Stack>
-
-        {/* Description */}
         <TextField
           label="Description"
           multiline
@@ -212,7 +124,6 @@ export const AddProduct = () => {
           helperText={errors.description?.message}
         />
 
-        {/* Price and Discount */}
         <Stack direction={is480 ? "column" : "row"} spacing={2}>
           <TextField
             label="Price"
@@ -232,44 +143,51 @@ export const AddProduct = () => {
           />
         </Stack>
 
-        {/* Stock Quantity */}
         <TextField
           label="Stock Quantity"
           type="number"
           {...register("stockQuantity", {
             required: "Stock Quantity is required",
-            min:{value: 0 , message:"Stock Quantity must be greater than 0"}
+            min: { value: 0, message: "Stock Quantity must be greater than 0" },
           })}
-          />
+          error={!!errors.stockQuantity}
+          helperText={errors.stockQuantity?.message}
+        />
 
-        {/* Upload Thumbnail */}
         <Typography>Upload Thumbnail</Typography>
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => setThumbnail(e.target.files[0])}
+          onChange={(e) => setThumbnail(e.target.files?.[0] || null)}
         />
-        {/* {uploadingImages[0] && <CircularProgress size={20} />} */}
 
-        {/* Upload Images */}
-        <Typography>Upload Images</Typography>
+        <Typography>Upload Images (up to 4)</Typography>
         {[1, 2, 3, 4].map((index) => (
           <Stack key={index} direction="row" alignItems="center" spacing={2}>
             <input
               type="file"
               accept="image/*"
               onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  setUploadedImageUrls((prev) => [...prev, file]);
-                }
+                const file = e.target.files?.[0];
+                if (file) setUploadedImageUrls((prev) => [...prev, file]);
               }}
             />
-            {/* {uploadingImages[index] && <CircularProgress size={20} />} */}
           </Stack>
         ))}
 
-        {/* Action Buttons */}
+        {/* NEW: Video upload */}
+        <Typography>Upload Product Video (optional)</Typography>
+        <input
+          type="file"
+          accept="video/*"
+          onChange={(e) => setVideo(e.target.files?.[0] || null)}
+        />
+        {video && (
+          <Typography variant="caption">
+            Selected video: {video.name} ({Math.round((video.size / 1024 / 1024) * 10) / 10} MB)
+          </Typography>
+        )}
+
         <Stack direction="row" justifyContent="flex-end" spacing={2}>
           <Button variant="contained" type="submit" disabled={isLoading}>
             {isLoading ? "Adding..." : "Add Product"}

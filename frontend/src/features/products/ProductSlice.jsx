@@ -8,6 +8,7 @@ import {
   undeleteProductById,
   updateProductById,
   softDeleteProductById,
+  fetchFeaturedProducts, // NEW
 } from "./ProductApi";
 
 const initialState = {
@@ -22,6 +23,7 @@ const initialState = {
   errors: null,
   successMessage: null,
   featuredProducts: [],
+  featuredMeta: { totalCount: 0, currentPage: 1, totalPages: 1 }, // NEW
 };
 
 export const addProductAsync = createAsyncThunk(
@@ -32,7 +34,6 @@ export const addProductAsync = createAsyncThunk(
   }
 );
 
-
 export const fetchProductsAsync = createAsyncThunk(
   "products/fetchProductsAsync",
   async (filters) => {
@@ -40,7 +41,6 @@ export const fetchProductsAsync = createAsyncThunk(
     return products;
   }
 );
-
 
 export const fetchProductByIdAsync = createAsyncThunk(
   "products/fetchProductByIdAsync",
@@ -50,8 +50,6 @@ export const fetchProductByIdAsync = createAsyncThunk(
   }
 );
 
-
-
 export const updateProductByIdAsync = createAsyncThunk(
   "products/updateProductByIdAsync",
   async (update) => {
@@ -59,7 +57,8 @@ export const updateProductByIdAsync = createAsyncThunk(
     return updatedProduct;
   }
 );
-// soft delete call
+
+// soft delete
 export const softDeleteProductByIdAsync = createAsyncThunk(
   "products/softDeleteProductByIdAsync",
   async (id) => {
@@ -67,6 +66,7 @@ export const softDeleteProductByIdAsync = createAsyncThunk(
     return deletedProduct;
   }
 );
+
 export const undeleteProductByIdAsync = createAsyncThunk(
   "products/undeleteProductByIdAsync",
   async (id) => {
@@ -74,6 +74,7 @@ export const undeleteProductByIdAsync = createAsyncThunk(
     return unDeletedProduct;
   }
 );
+
 export const deleteProductByIdAsync = createAsyncThunk(
   "products/deleteProductByIdAsync",
   async (id) => {
@@ -82,7 +83,7 @@ export const deleteProductByIdAsync = createAsyncThunk(
   }
 );
 
-//toggle feature call
+// toggle feature
 export const toggleProductFeaturedAsync = createAsyncThunk(
   "products/toggleProductFeaturedAsync",
   async ({ id, isFeatured }, { rejectWithValue }) => {
@@ -90,28 +91,24 @@ export const toggleProductFeaturedAsync = createAsyncThunk(
       const updatedProduct = await toggleProductFeatured(id, isFeatured);
       return updatedProduct;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// featured products getting call
+// FEATURED: use dedicated endpoint
 export const fetchFeaturedProductsAsync = createAsyncThunk(
   "products/fetchFeaturedProducts",
-  async () => {
-    try {
-      const featuredProducts = await fetchProducts({ isFeatured: true });
-      return featuredProducts;
-    } catch (err) {
-      return err.response.data;
-    }
+  async ({ page = 1, limit = 6 } = {}) => {
+    const payload = await fetchFeaturedProducts({ page, limit });
+    // payload: { data, totalCount, currentPage, totalPages }
+    return payload;
   }
 );
 
-
 const productSlice = createSlice({
-  name: "productSlice",
-  initialState: initialState,
+  name: "ProductSlice",
+  initialState,
   reducers: {
     clearProductErrors: (state) => {
       state.errors = null;
@@ -141,9 +138,7 @@ const productSlice = createSlice({
       const productId = action.payload;
       const featuredProducts = state.featuredProducts;
       if (featuredProducts.includes(productId)) {
-        state.featuredProducts = featuredProducts.filter(
-          (id) => id !== productId
-        );
+        state.featuredProducts = featuredProducts.filter((id) => id !== productId);
       } else {
         state.featuredProducts.push(productId);
       }
@@ -196,29 +191,28 @@ const productSlice = createSlice({
         const index = state.products.findIndex(
           (product) => product._id === action.payload._id
         );
-        state.products[index] = action.payload;
+        if (index !== -1) state.products[index] = action.payload;
       })
       .addCase(updateProductByIdAsync.rejected, (state, action) => {
         state.productUpdateStatus = "rejected";
         state.errors = action.error;
       })
-      // soft delete
+
       .addCase(softDeleteProductByIdAsync.pending, (state) => {
-      state.status = "pending";
+        state.status = "pending";
       })
       .addCase(softDeleteProductByIdAsync.fulfilled, (state, action) => {
         state.status = "fulfilled";
         const index = state.products.findIndex(
           (product) => product._id === action.payload._id
         );
-        if (index !== -1) {
-          state.products[index] = action.payload;
-        }
+        if (index !== -1) state.products[index] = action.payload;
       })
       .addCase(softDeleteProductByIdAsync.rejected, (state, action) => {
         state.status = "rejected";
         state.errors = action.error;
       })
+
       .addCase(undeleteProductByIdAsync.pending, (state) => {
         state.status = "pending";
       })
@@ -227,7 +221,7 @@ const productSlice = createSlice({
         const index = state.products.findIndex(
           (product) => product._id === action.payload._id
         );
-        state.products[index] = action.payload;
+        if (index !== -1) state.products[index] = action.payload;
       })
       .addCase(undeleteProductByIdAsync.rejected, (state, action) => {
         state.status = "rejected";
@@ -242,12 +236,13 @@ const productSlice = createSlice({
         const index = state.products.findIndex(
           (product) => product._id === action.payload._id
         );
-        state.products[index] = action.payload;
+        if (index !== -1) state.products[index] = action.payload;
       })
       .addCase(deleteProductByIdAsync.rejected, (state, action) => {
         state.status = "rejected";
         state.errors = action.error;
       })
+
       .addCase(toggleProductFeaturedAsync.pending, (state) => {
         state.status = "pending";
       })
@@ -256,20 +251,25 @@ const productSlice = createSlice({
         const index = state.products.findIndex(
           (product) => product._id === action.payload._id
         );
-        if (index !== -1) {
-          state.products[index] = action.payload;
-        }
+        if (index !== -1) state.products[index] = action.payload;
       })
       .addCase(toggleProductFeaturedAsync.rejected, (state, action) => {
         state.status = "rejected";
         state.errors = action.payload;
       })
+
+      // FEATURED (dedicated)
       .addCase(fetchFeaturedProductsAsync.pending, (state) => {
         state.status = "pending";
       })
       .addCase(fetchFeaturedProductsAsync.fulfilled, (state, action) => {
         state.status = "fulfilled";
-        state.featuredProducts = action.payload.data; // Assuming API response structure
+        state.featuredProducts = action.payload.data || [];
+        state.featuredMeta = {
+          totalCount: action.payload.totalCount || 0,
+          currentPage: action.payload.currentPage || 1,
+          totalPages: action.payload.totalPages || 1,
+        };
       })
       .addCase(fetchFeaturedProductsAsync.rejected, (state, action) => {
         state.status = "rejected";
@@ -278,36 +278,21 @@ const productSlice = createSlice({
   },
 });
 
-// exporting selectors
+// selectors
 export const selectProductStatus = (state) => state.ProductSlice.status;
-
 export const selectProducts = (state) => state.ProductSlice.products;
-
-export const selectProductTotalResults = (state) =>
-  state.ProductSlice.totalResults;
-
-
-export const selectSelectedProduct = (state) =>
-  state.ProductSlice.selectedProduct;
-
-
+export const selectProductTotalResults = (state) => state.ProductSlice.totalResults;
+export const selectSelectedProduct = (state) => state.ProductSlice.selectedProduct;
 export const selectProductErrors = (state) => state.ProductSlice.errors;
+export const selectProductSuccessMessage = (state) => state.ProductSlice.successMessage;
+export const selectProductUpdateStatus = (state) => state.ProductSlice.productUpdateStatus;
+export const selectProductAddStatus = (state) => state.ProductSlice.productAddStatus;
+export const selectProductIsFilterOpen = (state) => state.ProductSlice.isFilterOpen;
+export const selectProductFetchStatus = (state) => state.ProductSlice.productFetchStatus;
+export const selectFeaturedProducts = (state) => state.ProductSlice.featuredProducts;
+export const selectFeaturedMeta = (state) => state.ProductSlice.featuredMeta;
 
-export const selectProductSuccessMessage = (state) =>
-  state.ProductSlice.successMessage;
-
-export const selectProductUpdateStatus = (state) =>
-  state.ProductSlice.productUpdateStatus;
-export const selectProductAddStatus = (state) =>
-  state.ProductSlice.productAddStatus;
-export const selectProductIsFilterOpen = (state) =>
-  state.ProductSlice.isFilterOpen;
-export const selectProductFetchStatus = (state) =>
-  state.ProductSlice.productFetchStatus;
-export const selectFeaturedProducts = (state) =>
-  state.ProductSlice.featuredProducts;
-
-// exporting actions
+// actions
 export const {
   clearProductSuccessMessage,
   clearProductErrors,
@@ -317,6 +302,7 @@ export const {
   resetProductAddStatus,
   toggleFilters,
   resetProductFetchStatus,
+  toggleFeatured,
 } = productSlice.actions;
 
 export default productSlice.reducer;
