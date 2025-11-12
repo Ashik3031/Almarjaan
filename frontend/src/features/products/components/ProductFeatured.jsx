@@ -180,7 +180,7 @@ const ProductFeatured = () => {
       {/* View All */}
       <div className="text-center pb-20">
         <Link
-          to="/collections"
+          to="/products"
           className="text-[10px] tracking-[0.3em] uppercase font-light border-b border-black pb-1 hover:text-gray-500 hover:border-gray-500 transition-colors"
         >
           View All Products

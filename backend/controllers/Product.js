@@ -252,55 +252,148 @@ exports.getById = async (req, res) => {
 //   }
 // };
 
+//ashik code
+
+// exports.updateById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const existingProduct = await Product.findById(id);
+    
+//     if (!existingProduct) {
+//       return res.status(404).json({ message: "Product not found" });
+//     }
+
+//     const updatedFields = { ...req.body };
+
+//     // Handle thumbnail
+//     if (req.files["thumbnail"]?.[0]) {
+//       updatedFields.thumbnail = req.files["thumbnail"][0].path;
+//     }
+
+//     // Handle images - start with existing images
+//     let finalImages = [...existingProduct.images];
+
+//     // Remove images marked for deletion
+//     if (req.body.removedImages) {
+//       const removedUrls = Array.isArray(req.body.removedImages) 
+//         ? req.body.removedImages 
+//         : [req.body.removedImages];
+//       finalImages = finalImages.filter(img => !removedUrls.includes(img));
+//     }
+
+//     // Add new images (only if they don't already exist)
+//     if (req.files["images"]) {
+//       const newImageUrls = req.files["images"].map(file => file.path);
+//       newImageUrls.forEach(url => {
+//         if (!finalImages.includes(url)) {
+//           finalImages.push(url);
+//         }
+//       });
+//     }
+
+//     updatedFields.images = finalImages;
+
+//     const removeVideo = body.removeVideo === "true";
+//     if (removeVideo) {
+//       updated.video = undefined;  // optionally also delete from storage
+//     }
+//     if (req.files?.video?.[0]) {
+//       updated.video = req.files.video[0].path;
+//     }
+
+//     const updated = await Product.findByIdAndUpdate(id, updatedFields, {
+//       new: true,
+//     });
+
+//     res.status(200).json(updated);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error updating product" });
+//   }
+// };
+
+//new code - archana
+
 exports.updateById = async (req, res) => {
   try {
     const { id } = req.params;
     const existingProduct = await Product.findById(id);
-    
     if (!existingProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const updatedFields = { ...req.body };
+    const b = req.body || {};
+    const updatedFields = {};     // for $set
+    const unset = {};             // for $unset
 
-    // Handle thumbnail
-    if (req.files["thumbnail"]?.[0]) {
-      updatedFields.thumbnail = req.files["thumbnail"][0].path;
+    // helper to only set valid numbers
+    const toNum = (val) => {
+      if (val === undefined || val === null || val === "") return undefined;
+      const n = parseFloat(val);
+      return Number.isNaN(n) ? undefined : n;
+    };
+
+    // Scalars (only set when provided & valid)
+    if (b.title !== undefined && b.title !== "") updatedFields.title = b.title;
+    if (b.description !== undefined && b.description !== "") updatedFields.description = b.description;
+
+    const priceNum = toNum(b.price);
+    if (priceNum !== undefined) updatedFields.price = priceNum;
+
+    const discNum = toNum(b.discountPercentage);
+    if (discNum !== undefined) updatedFields.discountPercentage = discNum;
+
+    // If you still keep stockQuantity as a single number:
+    const stockNum = toNum(b.stockQuantity);
+    if (stockNum !== undefined) updatedFields.stockQuantity = stockNum;
+
+    // Thumbnail
+    if (req.files?.thumbnail?.[0]) {
+      updatedFields.thumbnail = req.files.thumbnail[0].path;
+    } else if (b.thumbnail === "") {
+      // explicit removal
+      unset.thumbnail = 1;
     }
 
-    // Handle images - start with existing images
-    let finalImages = [...existingProduct.images];
+    // Images (merge existing - removals + new)
+    let finalImages = Array.isArray(existingProduct.images) ? [...existingProduct.images] : [];
 
-    // Remove images marked for deletion
-    if (req.body.removedImages) {
-      const removedUrls = Array.isArray(req.body.removedImages) 
-        ? req.body.removedImages 
-        : [req.body.removedImages];
-      finalImages = finalImages.filter(img => !removedUrls.includes(img));
+    if (b.removedImages !== undefined) {
+      const removed = Array.isArray(b.removedImages) ? b.removedImages : [b.removedImages];
+      finalImages = finalImages.filter((url) => !removed.includes(url));
     }
 
-    // Add new images (only if they don't already exist)
-    if (req.files["images"]) {
-      const newImageUrls = req.files["images"].map(file => file.path);
-      newImageUrls.forEach(url => {
-        if (!finalImages.includes(url)) {
-          finalImages.push(url);
-        }
+    if (req.files?.images?.length) {
+      const newUrls = req.files.images.map((f) => f.path);
+      newUrls.forEach((u) => {
+        if (!finalImages.includes(u)) finalImages.push(u);
       });
     }
 
     updatedFields.images = finalImages;
 
-    const updated = await Product.findByIdAndUpdate(id, updatedFields, {
-      new: true,
-    });
+    // Video
+    const removeVideo = b.removeVideo === "true";
+    if (removeVideo) unset.video = 1;
 
-    res.status(200).json(updated);
+    if (req.files?.video?.[0]) {
+      updatedFields.video = req.files.video[0].path;
+      if (unset.video) delete unset.video; // prefer the new upload if both sent
+    }
+
+    // Build update
+    const updateQuery = {};
+    if (Object.keys(updatedFields).length) updateQuery.$set = updatedFields;
+    if (Object.keys(unset).length) updateQuery.$unset = unset;
+
+    const updatedDoc = await Product.findByIdAndUpdate(id, updateQuery, { new: true });
+    return res.status(200).json(updatedDoc);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error updating product" });
+    console.error("Error updating product:", error);
+    return res.status(500).json({ message: error.message || "Error updating product" });
   }
 };
+
 
 
 // exports.updateById = async (req, res) => {

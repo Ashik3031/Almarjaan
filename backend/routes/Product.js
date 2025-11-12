@@ -28,6 +28,7 @@ router
   upload.fields([
     { name: "thumbnail", maxCount: 1 },
     { name: "images", maxCount: 4 },
+    { name: "video",     maxCount: 1 },
   ]),
   productController.updateById
 )
