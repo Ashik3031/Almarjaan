@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 const ProductBanner = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="flex flex-col md:flex-row items-center justify-between bg-white px-6 md:px-12 mt-0">
       {/* Image */}
@@ -22,9 +26,12 @@ const ProductBanner = () => {
           delicate flowers. The invigorating notes of a dream garden revealed
           in a selection of sunny fragrances.
         </p>
-        <button className="px-8 py-3 border border-black text-sm tracking-wider hover:bg-black hover:text-white transition duration-300">
-          DISCOVER THE SELECTION
-        </button>
+        <button
+      onClick={() => navigate("/products")}
+      className="px-8 py-3 border border-black text-sm tracking-wider hover:bg-black hover:text-white transition duration-300"
+    >
+      DISCOVER THE SELECTION
+    </button>
       </div>
     </section>
   );
