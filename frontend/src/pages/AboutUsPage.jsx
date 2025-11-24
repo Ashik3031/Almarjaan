@@ -6,7 +6,7 @@ export const AboutUsPage =()=>{
     return (
         <>
         <Navbar />
-        <div className="pt-10">
+        <div >
         <AboutUs/>
         </div>
         <Footer />

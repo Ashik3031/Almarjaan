@@ -1,26 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-const aboutus = "https://res.cloudinary.com/dsfgakhl4/image/upload/v1750488653/perfume-bottle-nature_2_a7cyha.jpg";
+
+const aboutus = "https://res.cloudinary.com/dxq0nrirt/image/upload/v1763984905/IMG_8641-fine_ihxcgk.jpg";
 
 const AboutUs = () => {
-  const heroRef = useRef(null);
   const sectionsRef = useRef([]);
 
   useEffect(() => {
-    // Parallax effect for hero section
-    const handleScroll = () => {
-      const scrolled = window.pageYOffset;
-      const hero = heroRef.current;
-      if (hero) {
-        hero.style.transform = `translateY(${scrolled * 0.5}px)`;
-      }
-    };
-
-    // Intersection Observer for fade-in animations
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in');
+            entry.target.classList.add('fade-in-active');
           }
         });
       }, 
@@ -31,325 +21,281 @@ const AboutUs = () => {
       if (section) observer.observe(section);
     });
 
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
+  const products = [
+    {
+      name: "Noir Sublime",
+      subtitle: "Eau de Parfum",
+      notes: {
+        top: "Saffron, Bergamot",
+        heart: "Bulgarian Rose, Oud",
+        base: "Amber, Patchouli, Vanilla"
+      },
+      description: "A captivating blend where precious oud meets delicate rose, wrapped in warm amber. Bold yet refined."
+    },
+    {
+      name: "Lumière d'Or",
+      subtitle: "Eau de Parfum",
+      notes: {
+        top: "Mandarin, Pink Pepper",
+        heart: "Jasmine, Orange Blossom",
+        base: "Sandalwood, White Musk, Vanilla"
+      },
+      description: "A luminous floral that captures the golden hour. Fresh citrus opens to creamy florals and warm woods."
+    },
+    {
+      name: "Oud Impérial",
+      subtitle: "Extrait de Parfum",
+      notes: {
+        top: "Frankincense, Cardamom",
+        heart: "Cambodian Oud, Geranium",
+        base: "Leather, Vetiver, Musk"
+      },
+      description: "Our most profound creation. Aged oud from Cambodia melds with sacred frankincense and leather."
+    },
+    {
+      name: "Rose Mystique",
+      subtitle: "Eau de Parfum",
+      notes: {
+        top: "Turkish Rose, Lychee",
+        heart: "Peony, Magnolia",
+        base: "Cedarwood, Musk"
+      },
+      description: "A modern interpretation of the timeless rose. Fruity sweetness balanced by fresh petals and woody depth."
+    },
+    {
+      name: "Bois Précieux",
+      subtitle: "Eau de Parfum",
+      notes: {
+        top: "Cypress, Lavender",
+        heart: "Iris, Cashmere Wood",
+        base: "Cedarwood, Amber, Tonka Bean"
+      },
+      description: "An elegant woody composition. Clean aromatics transition to soft iris and rich cedar."
+    },
+    {
+      name: "Ambre Royal",
+      subtitle: "Parfum",
+      notes: {
+        top: "Cinnamon, Nutmeg",
+        heart: "Dates, Tuberose, Praline",
+        base: "Amber, Oud, Vanilla"
+      },
+      description: "Opulent and warm. Sweet spices and gourmand heart rest on a luxurious base of amber and oud."
+    }
+  ];
+
   return (
-    <div className="bg-[#f8f6f0] min-h-screen">
-      {/* Hero Section with Parallax */}
-      <div className="relative h-screen overflow-hidden">
+    <div className="bg-white">
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div 
-          ref={heroRef}
-          className="absolute inset-0 bg-gradient-to-br from-[#2c2c2c] via-[#1a1a1a] to-black"
-        >
-          <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-          <div className="absolute inset-0 flex items-center justify-center text-center text-white px-4">
-            <div className="max-w-4xl">
-              <h1 className="text-6xl md:text-8xl font-light tracking-wider mb-8 opacity-0 animate-slide-up">
-                AL MARJAAN
-              </h1>
-              <div className="w-24 h-px bg-white mx-auto mb-8 opacity-0 animate-slide-up" style={{animationDelay: '0.5s'}}></div>
-              <p className="text-xl md:text-2xl font-light tracking-wide opacity-0 animate-slide-up" style={{animationDelay: '1s'}}>
-                Art of Perfumes — The Art of Fragrance
-              </p>
-              <p className="text-lg md:text-xl font-extralight mt-4 opacity-0 animate-slide-up" style={{animationDelay: '1.5s'}}>
-                Luxury Perfumes Crafted in the Heart of the UAE
-              </p>
-            </div>
-          </div>
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${aboutus})`,
+            filter: 'brightness(0.4)'
+          }}
+        />
+        <div className="relative z-10 text-center text-white px-6">
+          <h1 className="text-5xl md:text-7xl font-light tracking-widest mb-6 uppercase">
+            AL MARJAAN
+          </h1>
+          <div className="w-16 h-px bg-white mx-auto mb-6 opacity-70"></div>
+          <p className="text-lg md:text-xl font-light tracking-wide max-w-2xl mx-auto">
+            Where ancient traditions meet contemporary artistry
+          </p>
         </div>
-      </div>
+      </section>
+
+      {/* Story Section */}
+      <section 
+        ref={el => sectionsRef.current[0] = el}
+        className="py-32 px-6 max-w-4xl mx-auto fade-in"
+      >
+        <div className="text-center mb-20">
+          <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-8 tracking-wide">
+            Our Story
+          </h2>
+          <div className="w-12 h-px bg-gray-400 mx-auto mb-12"></div>
+        </div>
+        
+        <div className="space-y-8 text-gray-700 font-light leading-relaxed text-lg">
+          <p>
+            Founded in the heart of the UAE, AL MARJAAN draws its name from the precious coral—
+            a symbol of natural beauty shaped by time and tide.
+          </p>
+          <p>
+            Our master perfumers combine centuries of Arabian perfumery heritage with the precision 
+            of French haute parfumerie. Each fragrance is a dialogue between East and West, 
+            tradition and innovation.
+          </p>
+          <p>
+            We source the finest raw materials from around the world: Bulgarian roses harvested at dawn, 
+            Cambodian oud aged for decades, Italian bergamot kissed by Mediterranean sun. 
+            These precious essences are transformed through ancient distillation techniques 
+            and modern artistry into scents that speak to the soul.
+          </p>
+        </div>
+      </section>
 
       {/* Philosophy Section */}
       <section 
-        ref={el => sectionsRef.current[0] = el}
-        className="py-24 px-4 sm:px-6 lg:px-8 opacity-0"
+        ref={el => sectionsRef.current[1] = el}
+        className="py-32 bg-gray-50 fade-in"
       >
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-light text-[#2c2c2c] mb-6">
-              Notre Histoire
-            </h2>
-            <div className="w-16 h-px bg-[#d4af37] mx-auto mb-8"></div>
-            <p className="text-xl text-[#666] font-light max-w-3xl mx-auto leading-relaxed">
-              Born from the ancient traditions of Arabian perfumery and the modern sophistication of 
-              contemporary fragrance artistry, AL MARJAAN represents the pinnacle of olfactory excellence.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              <div className="prose prose-lg text-[#555] font-light leading-relaxed">
-                <p>
-                  Like the precious coral from which we take our name, AL MARJAAN embodies 
-                  both the treasures of the deep and the artistry of time. Our master perfumers 
-                  blend centuries-old Arabian heritage with contemporary French techniques.
-                </p>
-                <p>
-                  Each fragrance tells a story — of desert winds carrying whispers of oud, 
-                  of rose gardens blooming under starlit skies, of spice markets alive with 
-                  the essence of distant lands. We capture these moments in crystal bottles.
-                </p>
-                <p>
-                  From our atelier in the UAE, where East meets West in perfect harmony, 
-                  we create scents that transcend boundaries and awaken the deepest emotions.
-                </p>
-              </div>
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+            <div className="text-center">
+              <h3 className="text-xl font-light mb-6 tracking-wide">Craftsmanship</h3>
+              <div className="w-8 h-px bg-gray-400 mx-auto mb-6"></div>
+              <p className="text-gray-600 font-light leading-relaxed">
+                Every fragrance undergoes 72 hours of maceration, 
+                allowing notes to marry and mature into perfect harmony.
+              </p>
             </div>
-            <div className="relative">
-              <div className="aspect-square bg-[#2c2c2c] rounded-full p-8 shadow-2xl">
-                <img
-                  src={aboutus} 
-                  alt="AL MARJAAN Perfume Atelier"
-                  className="w-full h-full object-cover rounded-full filter grayscale hover:grayscale-0 transition-all duration-700"
-                />
-              </div>
-              <div className="absolute -top-4 -right-4 w-24 h-24 border border-[#d4af37] rounded-full opacity-50"></div>
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 border border-[#d4af37] rounded-full opacity-30"></div>
+            <div className="text-center">
+              <h3 className="text-xl font-light mb-6 tracking-wide">Ingredients</h3>
+              <div className="w-8 h-px bg-gray-400 mx-auto mb-6"></div>
+              <p className="text-gray-600 font-light leading-relaxed">
+                We maintain a library of over 200 rare essences, 
+                each selected for its exceptional quality and character.
+              </p>
+            </div>
+            <div className="text-center">
+              <h3 className="text-xl font-light mb-6 tracking-wide">Artistry</h3>
+              <div className="w-8 h-px bg-gray-400 mx-auto mb-6"></div>
+              <p className="text-gray-600 font-light leading-relaxed">
+                Our perfumers compose not with formulas, but with emotion, 
+                creating olfactory memories that linger long after.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Collections Section */}
+      {/* Products Section */}
       <section 
-        ref={el => sectionsRef.current[1] = el}
-        className="py-24 bg-white opacity-0"
+        ref={el => sectionsRef.current[2] = el}
+        className="py-32 px-6 fade-in"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-light text-[#2c2c2c] mb-6">
-              Nos Collections
+            <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-8 tracking-wide">
+              Signature Creations
             </h2>
-            <div className="w-16 h-px bg-[#d4af37] mx-auto mb-8"></div>
-            <p className="text-xl text-[#666] font-light max-w-3xl mx-auto">
-              Three distinct olfactory journeys, each crafted with uncompromising artistry
+            <div className="w-12 h-px bg-gray-400 mx-auto mb-12"></div>
+            <p className="text-lg text-gray-600 font-light max-w-2xl mx-auto">
+              Six fragrances that define our philosophy. Each a masterpiece of balance and depth.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Héritage",
-                subtitle: "Arabian Legacy",
-                description: "Our signature collection celebrates the timeless beauty of traditional Arabian perfumery. Rich oud, precious rose, and exotic spices dance together in perfect harmony.",
-                icon: "🌹"
-              },
-              {
-                title: "Modernité",
-                subtitle: "Contemporary Elegance", 
-                description: "Where innovation meets tradition. Fresh, sophisticated compositions that speak to the modern soul while honoring our deep-rooted heritage.",
-                icon: "✨"
-              },
-              {
-                title: "Prestige",
-                subtitle: "Haute Parfumerie",
-                description: "Our most exclusive creations, crafted with the rarest ingredients from around the world. Limited editions that represent the absolute pinnacle of our art.",
-                icon: "💎"
-              }
-            ].map((collection, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {products.map((product, index) => (
               <div 
                 key={index}
-                className="group relative bg-[#f8f6f0] p-8 hover:bg-white transition-all duration-500 hover:shadow-2xl border border-transparent hover:border-[#d4af37]"
+                className="group"
               >
-                <div className="text-center">
-                  <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
-                    {collection.icon}
+                <div className="border border-gray-200 p-8 hover:border-gray-400 transition-colors duration-500 h-full flex flex-col">
+                  <div className="mb-6">
+                    <h3 className="text-xl font-light mb-2 tracking-wide">{product.name}</h3>
+                    <p className="text-sm text-gray-500 tracking-wider uppercase">{product.subtitle}</p>
                   </div>
-                  <h3 className="text-2xl font-light text-[#2c2c2c] mb-2">
-                    {collection.title}
-                  </h3>
-                  <div className="w-8 h-px bg-[#d4af37] mx-auto mb-4"></div>
-                  <p className="text-sm text-[#d4af37] font-medium mb-4 tracking-wider uppercase">
-                    {collection.subtitle}
-                  </p>
-                  <p className="text-[#666] font-light leading-relaxed">
-                    {collection.description}
-                  </p>
+                  
+                  <div className="mb-6 flex-grow">
+                    <p className="text-sm text-gray-700 font-light leading-relaxed mb-6">
+                      {product.description}
+                    </p>
+                    
+                    <div className="space-y-3 text-xs text-gray-600">
+                      <div>
+                        <span className="uppercase tracking-wider text-gray-500">Top:</span>
+                        <span className="ml-2 font-light">{product.notes.top}</span>
+                      </div>
+                      <div>
+                        <span className="uppercase tracking-wider text-gray-500">Heart:</span>
+                        <span className="ml-2 font-light">{product.notes.heart}</span>
+                      </div>
+                      <div>
+                        <span className="uppercase tracking-wider text-gray-500">Base:</span>
+                        <span className="ml-2 font-light">{product.notes.base}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#d4af37] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Craftsmanship Section */}
+      {/* Experience Section */}
       <section 
-        ref={el => sectionsRef.current[2] = el}
-        className="py-24 bg-[#2c2c2c] text-white opacity-0"
+        ref={el => sectionsRef.current[3] = el}
+        className="py-32 bg-gray-50 fade-in"
       >
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-light mb-8">
-                Art of Creation
-              </h2>
-              <div className="w-16 h-px bg-[#d4af37] mb-8"></div>
-              <div className="space-y-6 text-[#ccc] font-light leading-relaxed">
-                <p className="text-lg">
-                  Every AL MARJAAN fragrance begins with a story, an emotion, a memory waiting to be captured.
-                </p>
-                <p>
-                  Our master perfumers source the finest raw materials from around the globe — 
-                  Bulgarian roses at dawn, Cambodian oud aged for decades, Italian bergamot kissed by Mediterranean sun.
-                </p>
-                <p>
-                  Through ancient distillation techniques and modern precision, we transform these precious 
-                  essences into liquid poetry that speaks to the soul.
-                </p>
-              </div>
-            </div>
-            <div className="space-y-8">
-              {[
-                { number: "72", text: "Hours of maceration for each essence" },
-                { number: "200", text: "Rare ingredients in our library" },
-                { number: "∞", text: "Possibilities for olfactory creation" }
-              ].map((stat, index) => (
-                <div key={index} className="text-center p-6 border border-[#444] hover:border-[#d4af37] transition-colors duration-300">
-                  <div className="text-3xl font-light text-[#d4af37] mb-2">{stat.number}</div>
-                  <div className="text-[#ccc] font-light">{stat.text}</div>
-                </div>
-              ))}
-            </div>
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-8 tracking-wide">
+            Visit Our Atelier
+          </h2>
+          <div className="w-12 h-px bg-gray-400 mx-auto mb-12"></div>
+          
+          <div className="space-y-6 text-gray-700 font-light leading-relaxed text-lg mb-16">
+            <p>
+              Experience our fragrances in person at our flagship boutique in the UAE. 
+              Our consultants guide you through a personalized journey of discovery.
+            </p>
+            <p>
+              For discerning clients, we offer bespoke fragrance creation—
+              working directly with our master perfumers to craft a scent uniquely yours.
+            </p>
+          </div>
+
+          <div className="pt-12 border-t border-gray-300">
+            <p className="text-sm text-gray-500 uppercase tracking-widest mb-2">United Arab Emirates</p>
+            <p className="text-gray-600 font-light">By appointment & walk-in welcome</p>
           </div>
         </div>
       </section>
 
       {/* Quote Section */}
       <section 
-        ref={el => sectionsRef.current[3] = el}
-        className="py-24 bg-[#f8f6f0] opacity-0"
+        ref={el => sectionsRef.current[4] = el}
+        className="py-32 px-6 fade-in"
       >
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <blockquote className="text-3xl md:text-4xl font-light italic mb-8 leading-relaxed text-[#2c2c2c]">
-            "A fragrance is a love letter to the world, written in the language of scent, 
-            signed with the soul of its creator."
+        <div className="max-w-3xl mx-auto text-center">
+          <blockquote className="text-2xl md:text-3xl font-light italic text-gray-800 leading-relaxed mb-8">
+            "A perfume is more than a scent—it is a memory waiting to be made, 
+            an emotion captured in a single breath."
           </blockquote>
-          <div className="w-24 h-px bg-[#d4af37] mx-auto mb-8"></div>
-          <p className="text-xl font-light text-[#666]">
-            Master Perfumer, AL MARJAAN
+          <div className="w-12 h-px bg-gray-400 mx-auto mb-6"></div>
+          <p className="text-sm text-gray-500 uppercase tracking-widest">
+            Master Perfumer
           </p>
         </div>
       </section>
 
-      {/* Experience Section */}
-      <section 
-        ref={el => sectionsRef.current[4] = el}
-        className="py-24 bg-white opacity-0"
-      >
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-light text-[#2c2c2c] mb-6">
-            L'Expérience
-          </h2>
-          <div className="w-16 h-px bg-[#d4af37] mx-auto mb-12"></div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
-            <div>
-              <h3 className="text-2xl font-light text-[#2c2c2c] mb-4">Boutique Experience</h3>
-              <p className="text-[#666] font-light leading-relaxed">
-                Visit our flagship boutique in the UAE, where our fragrance consultants guide you 
-                through a personalized olfactory journey. Discover your signature scent in an 
-                atmosphere of luxury and refinement.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-2xl font-light text-[#2c2c2c] mb-4">Bespoke Creations</h3>
-              <p className="text-[#666] font-light leading-relaxed">
-                For the most discerning clients, we offer exclusive bespoke fragrance creation. 
-                Work directly with our master perfumers to craft a scent that is uniquely, 
-                unmistakably yours.
-              </p>
-            </div>
-          </div>
+      {/* Footer */}
+      <footer className="py-16 bg-gray-900 text-white">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h3 className="text-2xl font-light mb-4 tracking-widest">AL MARJAAN</h3>
+          <p className="text-sm text-gray-400 uppercase tracking-widest">
+            Excellence in Perfumery
+          </p>
         </div>
-      </section>
-
-      {/* Contact Section */}
-      <section 
-        ref={el => sectionsRef.current[5] = el}
-        className="py-24 bg-[#2c2c2c] text-white opacity-0"
-      >
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-light mb-6">
-            Rendez-vous
-          </h2>
-          <div className="w-16 h-px bg-[#d4af37] mx-auto mb-12"></div>
-          
-          <div className="space-y-8 text-[#ccc] font-light">
-            <div>
-              <p className="text-xl mb-6">Discover the world of AL MARJAAN</p>
-              <p className="text-lg text-[#d4af37] font-medium mb-4">
-                Visit our flagship boutique or explore our collections online
-              </p>
-            </div>
-            
-            <div className="border-t border-[#444] pt-8">
-              <p className="text-lg mb-4">📍 Our Atelier & Boutique</p>
-              <p className="text-[#aaa] leading-relaxed">
-                United Arab Emirates<br/>
-                Where tradition meets innovation<br/>
-                By appointment and walk-in welcome
-              </p>
-            </div>
-
-            <div className="border-t border-[#444] pt-8">
-              <p className="text-lg mb-2">Connect with us</p>
-              <p className="text-[#aaa]">
-                Follow our journey on social media<br/>
-                Subscribe to our newsletter for exclusive releases
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-16 pt-12 border-t border-[#444]">
-            <p className="text-2xl md:text-3xl font-light mb-4">
-              AL MARJAAN
-            </p>
-            <p className="text-[#d4af37] font-medium tracking-wider uppercase text-sm">
-              Excellence Parfume — Perfumed Excellence
-            </p>
-          </div>
-        </div>
-      </section>
+      </footer>
 
       <style jsx>{`
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        .fade-in {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
 
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-slide-up {
-          animation: slide-up 1s ease-out forwards;
-        }
-
-        .animate-fade-in {
-          animation: fade-in 1s ease-out forwards;
-        }
-
-        .prose p {
-          margin-bottom: 1.5rem;
+        .fade-in-active {
+          opacity: 1;
+          transform: translateY(0);
         }
       `}</style>
     </div>

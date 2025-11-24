@@ -13,18 +13,18 @@ const Cart = require("../models/Cart");
 
 exports.create = async (req, res) => {
   try {
-    const { user, product, size, quantity } = req.body;
+    const { user, product, quantity } = req.body;
     
 
    
 
     //checking if the product is already in the cart
-    let cartItem = await Cart.findOne({ user, product, size });
+    let cartItem = await Cart.findOne({ user, product });
 
     if (cartItem) {
       cartItem.quantity += quantity || 1;
     } else {
-      cartItem = new Cart({ user, product, size, quantity });
+      cartItem = new Cart({ user, product, quantity });
     }
 
     await cartItem.save();

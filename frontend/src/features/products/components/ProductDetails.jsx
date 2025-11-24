@@ -13,7 +13,6 @@ import {
 import {
   Box,
   Checkbox,
-  Rating,
   Stack,
   Typography,
   useMediaQuery,
@@ -42,10 +41,8 @@ import {
 } from "../../review/ReviewSlice";
 import { Reviews } from "../../review/components/Reviews";
 import { toast } from "react-toastify";
-import { MotionConfig, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import CachedOutlinedIcon from "@mui/icons-material/CachedOutlined";
 import Favorite from "@mui/icons-material/Favorite";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
@@ -88,10 +85,12 @@ export const ProductDetails = () => {
   const theme = useTheme();
   const is480 = useMediaQuery(theme.breakpoints.down(480));
   const is840 = useMediaQuery(theme.breakpoints.down(840));
-  const is990 = useMediaQuery(theme.breakpoints.down(990));
   const is1420 = useMediaQuery(theme.breakpoints.down(1420));
 
-  const totalReviewRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+  const totalReviewRating = reviews.reduce(
+    (acc, review) => acc + review.rating,
+    0
+  );
   const totalReviews = reviews.length;
   const averageRating = Math.ceil(totalReviewRating / (totalReviews || 1));
 
@@ -103,10 +102,9 @@ export const ProductDetails = () => {
     (item) => item?.product?._id === id
   );
 
-  const totalStock = Object.values(product?.stockQuantity || {}).reduce(
-    (acc, qty) => acc + qty,
-    0
-  );
+  // ✅ CORRECT: use the Number field stockQuantity from schema
+  const totalStock =
+    typeof product?.stockQuantity === "number" ? product.stockQuantity : 0;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -126,18 +124,24 @@ export const ProductDetails = () => {
   }, [dispatch, id]);
 
   useEffect(() => {
-    if (cartItemAddStatus === "fulfilled") toast.success("Product added to cart");
-    else if (cartItemAddStatus === "rejected") toast.error("Error adding product to cart");
+    if (cartItemAddStatus === "fulfilled")
+      toast.success("Product added to cart");
+    else if (cartItemAddStatus === "rejected")
+      toast.error("Error adding product to cart");
   }, [cartItemAddStatus]);
 
   useEffect(() => {
-    if (wishlistItemAddStatus === "fulfilled") toast.success("Product added to wishlist");
-    else if (wishlistItemAddStatus === "rejected") toast.error("Error adding to wishlist");
+    if (wishlistItemAddStatus === "fulfilled")
+      toast.success("Product added to wishlist");
+    else if (wishlistItemAddStatus === "rejected")
+      toast.error("Error adding to wishlist");
   }, [wishlistItemAddStatus]);
 
   useEffect(() => {
-    if (wishlistItemDeleteStatus === "fulfilled") toast.success("Product removed from wishlist");
-    else if (wishlistItemDeleteStatus === "rejected") toast.error("Error removing from wishlist");
+    if (wishlistItemDeleteStatus === "fulfilled")
+      toast.success("Product removed from wishlist");
+    else if (wishlistItemDeleteStatus === "rejected")
+      toast.error("Error removing from wishlist");
   }, [wishlistItemDeleteStatus]);
 
   const handleAddToCart = () => {
@@ -163,9 +167,13 @@ export const ProductDetails = () => {
 
   const handleAddRemoveFromWishlist = (e) => {
     if (e.target.checked) {
-      dispatch(createWishlistItemAsync({ user: loggedInUser?._id, product: id }));
+      dispatch(
+        createWishlistItemAsync({ user: loggedInUser?._id, product: id })
+      );
     } else {
-      const index = wishlistItems.findIndex((item) => item?.product?._id === id);
+      const index = wishlistItems.findIndex(
+        (item) => item?.product?._id === id
+      );
       dispatch(deleteWishlistItemByIdAsync(wishlistItems[index]._id));
     }
   };
@@ -176,7 +184,7 @@ export const ProductDetails = () => {
 
   const ExpandableSection = ({ title, children }) => {
     const isExpanded = expandedSection === title;
-    
+
     return (
       <Box>
         <Stack
@@ -207,13 +215,24 @@ export const ProductDetails = () => {
     );
   };
 
+  const isLoading =
+    productFetchStatus === "pending" || reviewFetchStatus === "pending";
+
   return (
     <>
-      {(productFetchStatus !== "rejected" || reviewFetchStatus !== "rejected") && (
+      {(productFetchStatus !== "rejected" ||
+        reviewFetchStatus !== "rejected") && (
         <Stack alignItems="center" mb="4rem">
-          {(productFetchStatus || reviewFetchStatus) === "pending" ? (
-            <Stack height="calc(100vh - 4rem)" justifyContent="center" alignItems="center">
-              <Lottie animationData={loadingAnimation} style={{ width: "20rem" }} />
+          {isLoading ? (
+            <Stack
+              height="calc(100vh - 4rem)"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Lottie
+                animationData={loadingAnimation}
+                style={{ width: "20rem" }}
+              />
             </Stack>
           ) : (
             <Stack width="100%">
@@ -228,14 +247,14 @@ export const ProductDetails = () => {
                 columnGap="4rem"
               >
                 {/* Image Section */}
-                <Stack 
-                  flex={is840 ? "1" : "0 0 55%"} 
-                  flexDirection="row" 
+                <Stack
+                  flex={is840 ? "1" : "0 0 55%"}
+                  flexDirection="row"
                   columnGap="1rem"
                   position="relative"
                 >
-                  <Stack 
-                    width="100%" 
+                  <Stack
+                    width="100%"
                     alignItems="center"
                     justifyContent="center"
                   >
@@ -244,14 +263,14 @@ export const ProductDetails = () => {
                         <ImageSlider images={product?.images || []} />
                       </Box>
                     ) : (
-                      <Box 
-                        width="100%" 
+                      <Box
+                        width="100%"
                         maxWidth="600px"
                         display="flex"
                         justifyContent="center"
                       >
                         <img
-                          src={product?.images[selectedImageIndex]}
+                          src={product?.images?.[selectedImageIndex]}
                           alt={product?.title}
                           style={{
                             width: "100%",
@@ -262,11 +281,11 @@ export const ProductDetails = () => {
                         />
                       </Box>
                     )}
-                    
-                    {!is1420 && product?.images.length > 1 && (
-                      <Stack 
-                        direction="row" 
-                        gap="0.5rem" 
+
+                    {!is1420 && product?.images?.length > 1 && (
+                      <Stack
+                        direction="row"
+                        gap="0.5rem"
                         mt={3}
                         justifyContent="center"
                       >
@@ -278,7 +297,8 @@ export const ProductDetails = () => {
                               width: "10px",
                               height: "10px",
                               borderRadius: "50%",
-                              backgroundColor: selectedImageIndex === i ? "black" : "#ddd",
+                              backgroundColor:
+                                selectedImageIndex === i ? "black" : "#ddd",
                               cursor: "pointer",
                               transition: "all 0.3s ease",
                             }}
@@ -290,28 +310,30 @@ export const ProductDetails = () => {
                 </Stack>
 
                 {/* Product Info */}
-                <Stack 
-                  flex={is840 ? "1" : "0 0 40%"} 
-                  rowGap="2rem" 
+                <Stack
+                  flex={is840 ? "1" : "0 0 40%"}
+                  rowGap="2rem"
                   mt={is840 ? 4 : 0}
                 >
                   {/* Title and Product Info */}
                   <Stack rowGap="1rem">
-                    <Typography 
-                      variant={is480 ? "h5" : "h4"} 
+                    <Typography
+                      variant={is480 ? "h5" : "h4"}
                       fontWeight={400}
                       letterSpacing="0.02em"
                       sx={{ fontFamily: "'Playfair Display', serif" }}
                     >
                       {product?.title}
                     </Typography>
-                    
-                    <Typography 
-                      variant="body2" 
+
+                    <Typography
+                      variant="body2"
                       color="text.secondary"
                       sx={{ fontStyle: "italic" }}
                     >
-                      {product?.category || product?.brand}
+                      {product?.category?.name ||
+                        product?.category ||
+                        product?.brand}
                     </Typography>
                   </Stack>
 
@@ -320,9 +342,15 @@ export const ProductDetails = () => {
                     <Typography variant="h6" fontWeight={400}>
                       AED {product?.price}
                     </Typography>
-                    <Typography 
-                      variant="body2" 
-                      color={totalStock === 0 ? "error" : totalStock <= 10 ? "orange" : "success.main"}
+                    <Typography
+                      variant="body2"
+                      color={
+                        totalStock === 0
+                          ? "error"
+                          : totalStock <= 10
+                          ? "orange"
+                          : "success.main"
+                      }
                     >
                       {totalStock === 0
                         ? "Out of Stock"
@@ -335,7 +363,12 @@ export const ProductDetails = () => {
                   {!loggedInUser?.isAdmin && (
                     <>
                       {/* Add to Cart Section */}
-                      <Stack direction="row" gap={2} alignItems="center" flexWrap="wrap">
+                      <Stack
+                        direction="row"
+                        gap={2}
+                        alignItems="center"
+                        flexWrap="wrap"
+                      >
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
@@ -343,68 +376,91 @@ export const ProductDetails = () => {
                           disabled={totalStock <= 0 || isProductAlreadyInCart}
                           style={{
                             padding: "14px 40px",
-                            backgroundColor: totalStock <= 0 || isProductAlreadyInCart ? "#e0e0e0" : "black",
-                            color: totalStock <= 0 || isProductAlreadyInCart ? "#999" : "white",
+                            backgroundColor:
+                              totalStock <= 0 || isProductAlreadyInCart
+                                ? "#e0e0e0"
+                                : "black",
+                            color:
+                              totalStock <= 0 || isProductAlreadyInCart
+                                ? "#999"
+                                : "white",
                             border: "none",
-                            cursor: totalStock <= 0 || isProductAlreadyInCart ? "not-allowed" : "pointer",
+                            cursor:
+                              totalStock <= 0 || isProductAlreadyInCart
+                                ? "not-allowed"
+                                : "pointer",
                             fontSize: "0.95rem",
                             letterSpacing: "0.5px",
                             transition: "all 0.3s ease",
                           }}
                         >
-                          {isProductAlreadyInCart ? "In Cart" : totalStock <= 0 ? "Out of Stock" : `Add to bag · AED ${product?.price}`}
+                          {isProductAlreadyInCart
+                            ? "In Cart"
+                            : totalStock <= 0
+                            ? "Out of Stock"
+                            : `Add to bag · AED ${product?.price}`}
                         </motion.button>
 
                         <Checkbox
                           checked={isProductAlreadyinWishlist}
                           onChange={handleAddRemoveFromWishlist}
                           icon={<FavoriteBorder sx={{ fontSize: "1.8rem" }} />}
-                          checkedIcon={<Favorite sx={{ color: "red", fontSize: "1.8rem" }} />}
+                          checkedIcon={
+                            <Favorite
+                              sx={{ color: "red", fontSize: "1.8rem" }}
+                            />
+                          }
                         />
                       </Stack>
-
-                      {/* Reserve in boutique link */}
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          textDecoration: "underline",
-                          cursor: "pointer",
-                          width: "fit-content",
-                          "&:hover": { opacity: 0.7 }
-                        }}
-                      >
-                        Reserve in a boutique
-                      </Typography>
 
                       {/* Features */}
                       <Stack gap={1.5} mt={2}>
                         <Stack direction="row" gap={1.5} alignItems="center">
                           <KeyboardArrowRightIcon fontSize="small" />
-                          <Typography variant="body2">Free Returns</Typography>
+                          <Typography variant="body2">
+                            Free Returns
+                          </Typography>
                         </Stack>
                         <Stack direction="row" gap={1.5} alignItems="center">
                           <KeyboardArrowRightIcon fontSize="small" />
-                          <Typography variant="body2">2 free samples of your choice with every order</Typography>
+                          <Typography variant="body2">
+                            2 free samples of your choice with every order
+                          </Typography>
                         </Stack>
                       </Stack>
 
                       {/* Expandable Sections */}
                       <Stack mt={3}>
                         <ExpandableSection title="Description">
-                          <Typography variant="body2" color="text.secondary" lineHeight={1.8}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            lineHeight={1.8}
+                          >
                             {product?.description}
                           </Typography>
                         </ExpandableSection>
 
                         <ExpandableSection title="Refillable bottle">
-                          <Typography variant="body2" color="text.secondary" lineHeight={1.8}>
-                            Our iconic fragrance bottles can be refilled at certain stores. Simply take your empty bottle to a participating Diptyque store to refill it.
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            lineHeight={1.8}
+                          >
+                            Our iconic fragrance bottles can be refilled at
+                            certain stores. Simply take your empty bottle to a
+                            participating Diptyque store to refill it.
                           </Typography>
                         </ExpandableSection>
 
                         <ExpandableSection title="Ingredients">
-                          <Typography variant="body2" color="text.secondary" lineHeight={1.8}>
-                            {product?.ingredients || "Premium ingredients carefully selected for quality and performance."}
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            lineHeight={1.8}
+                          >
+                            {product?.ingredients ||
+                              "Premium ingredients carefully selected for quality and performance."}
                           </Typography>
                         </ExpandableSection>
                       </Stack>
@@ -412,32 +468,58 @@ export const ProductDetails = () => {
                   )}
 
                   {loggedInUser?.isAdmin && (
-                    <Stack mt={3} border="1px solid #e0e0e0" borderRadius="0px">
+                    <Stack
+                      mt={3}
+                      border="1px solid #e0e0e0"
+                      borderRadius="0px"
+                    >
                       <Stack p={3}>
-                        <Typography variant="h6" display="flex" alignItems="center" mb={2}>
-                          <InventoryIcon sx={{ mr: 1 }} /> Stock Per Variant
+                        <Typography
+                          variant="h6"
+                          display="flex"
+                          alignItems="center"
+                          mb={2}
+                        >
+                          <InventoryIcon sx={{ mr: 1 }} /> Stock Information
                         </Typography>
-                        <TableContainer component={Paper} sx={{ maxHeight: 300, boxShadow: "none" }}>
+                        <TableContainer
+                          component={Paper}
+                          sx={{ maxHeight: 200, boxShadow: "none" }}
+                        >
                           <Table size="small">
                             <TableHead>
                               <TableRow>
-                                <TableCell>Size</TableCell>
-                                <TableCell align="right">Available Stock</TableCell>
+                                <TableCell>Type</TableCell>
+                                <TableCell align="right">
+                                  Available Stock
+                                </TableCell>
                                 <TableCell align="right">Status</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {Object.entries(product?.stockQuantity || {}).map(([size, qty]) => (
-                                <TableRow key={size}>
-                                  <TableCell>{size}</TableCell>
-                                  <TableCell align="right">{qty}</TableCell>
-                                  <TableCell align="right" sx={{
-                                    color: qty <= 0 ? "error.main" : qty <= 5 ? "warning.main" : "success.main"
-                                  }}>
-                                    {qty <= 0 ? "Out of Stock" : qty <= 5 ? "Low Stock" : "In Stock"}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
+                              <TableRow>
+                                <TableCell>Total</TableCell>
+                                <TableCell align="right">
+                                  {totalStock}
+                                </TableCell>
+                                <TableCell
+                                  align="right"
+                                  sx={{
+                                    color:
+                                      totalStock <= 0
+                                        ? "error.main"
+                                        : totalStock <= 5
+                                        ? "warning.main"
+                                        : "success.main",
+                                  }}
+                                >
+                                  {totalStock <= 0
+                                    ? "Out of Stock"
+                                    : totalStock <= 5
+                                    ? "Low Stock"
+                                    : "In Stock"}
+                                </TableCell>
+                              </TableRow>
                             </TableBody>
                           </Table>
                         </TableContainer>
@@ -448,7 +530,12 @@ export const ProductDetails = () => {
               </Stack>
 
               {/* Reviews */}
-              <Stack width="100%" maxWidth="1400px" margin="0 auto" p={is480 ? 2 : 4}>
+              <Stack
+                width="100%"
+                maxWidth="1400px"
+                margin="0 auto"
+                p={is480 ? 2 : 4}
+              >
                 <Reviews productId={id} averageRating={averageRating} />
               </Stack>
             </Stack>

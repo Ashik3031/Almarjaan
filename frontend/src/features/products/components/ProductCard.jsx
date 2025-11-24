@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Stack,
   Typography,
@@ -34,7 +34,6 @@ export const ProductCard = ({
   const cartItems = useSelector(selectCartItems);
   const loggedInUser = useSelector(selectLoggedInUser);
   const { showToast } = useToast();
-  const [selectedSize, setSelectedSize] = useState(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -45,11 +44,20 @@ export const ProductCard = ({
   const handleAddToCart = (e) => {
     e.stopPropagation();
     if (!loggedInUser) return navigate("/login");
-    if (!selectedSize) {
-      showToast("Please select a size before adding to cart", "error");
+
+    // Optional: prevent adding if out of stock
+    if (stockQuantity <= 0) {
+      showToast("This item is out of stock", "error");
       return;
     }
-    dispatch(addToCartAsync({ user: loggedInUser?._id, product: id }));
+
+    dispatch(
+      addToCartAsync({
+        user: loggedInUser?._id,
+        product: id,
+        quantity: 1, // ✅ fixed: no size, just quantity 1
+      })
+    );
     showToast("Item added to cart successfully!", "success");
   };
 
@@ -71,7 +79,6 @@ export const ProductCard = ({
           width: "100%",
           height: "300px",
           objectFit: "cover",
-          
         }}
       />
 
@@ -96,7 +103,7 @@ export const ProductCard = ({
         )}
       </Stack>
 
-      {/* Brand (1-line only) */}
+      {/* Brand / description (1-line only) */}
       <Typography
         variant="body2"
         color="text.secondary"
@@ -116,27 +123,38 @@ export const ProductCard = ({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={(e) => handleAddToCart(e)}
-            disabled={isInCart}
+            onClick={handleAddToCart}
+            disabled={isInCart || stockQuantity <= 0}
             style={{
               padding: "6px 12px",
               borderRadius: "6px",
               border: "none",
-              backgroundColor: isInCart ? "#e5e7eb" : "black",
-              color: isInCart ? "#6b7280" : "white",
+              backgroundColor:
+                isInCart || stockQuantity <= 0 ? "#e5e7eb" : "black",
+              color:
+                isInCart || stockQuantity <= 0 ? "#6b7280" : "white",
               fontSize: ".85rem",
-              cursor: isInCart ? "not-allowed" : "pointer",
+              cursor:
+                isInCart || stockQuantity <= 0
+                  ? "not-allowed"
+                  : "pointer",
             }}
           >
-            {isInCart ? "In Cart" : "Add to Cart"}
+            {stockQuantity <= 0
+              ? "Out of Stock"
+              : isInCart
+              ? "In Cart"
+              : "Add to Cart"}
           </motion.button>
         )}
       </Stack>
 
       {/* Low stock warning */}
-      {stockQuantity <= 20 && (
+      {stockQuantity > 0 && stockQuantity <= 20 && (
         <FormHelperText error sx={{ fontSize: ".85rem" }}>
-          {stockQuantity === 1 ? "Only 1 stock is left" : "Only few are left"}
+          {stockQuantity === 1
+            ? "Only 1 stock is left"
+            : "Only few are left"}
         </FormHelperText>
       )}
     </Stack>
