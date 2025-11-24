@@ -249,15 +249,36 @@ exports.logout=async(req,res)=>{
     }
 }
 
-exports.checkAuth=async(req,res)=>{
+// exports.checkAuth=async(req,res)=>{
+//     try {
+//         if(req.user){
+//             const user=await User.findById(req.user._id)
+//             return res.status(200).json(sanitizeUser(user))
+//         }
+//         res.sendStatus(401)
+//     } catch (error) {
+//         console.log(error);
+//         res.sendStatus(500)
+//     }
+// }
+
+exports.checkAuth = async (req, res) => {
     try {
-        if(req.user){
-            const user=await User.findById(req.user._id)
-            return res.status(200).json(sanitizeUser(user))
+        if (!req.user || !req.user._id) {
+            return res.status(401).json({ message: "Not authenticated" });
         }
-        res.sendStatus(401)
+
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(401).json({ message: "User not found or token invalid" });
+        }
+
+        const safeUser = sanitizeUser(user);
+        return res.status(200).json(safeUser);
+
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500)
+        console.error("checkAuth error:", error);
+        return res.status(401).json({ message: "Invalid or expired token" });
     }
-}
+};
