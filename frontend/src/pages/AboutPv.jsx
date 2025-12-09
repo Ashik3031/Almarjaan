@@ -6,7 +6,7 @@ const AboutSection = () => {
       {/* Left - Video */}
       <div className="w-full md:w-1/2 relative overflow-hidden">
         <video
-          src="https://res.cloudinary.com/dugtxybef/video/upload/v1762855174/IMG_8518_ortqmi.mov" // replace with your video URL
+          src="https://res.cloudinary.com/dxq0nrirt/video/upload/v1765271307/Al_Marjaan_video_02_gd4inj.mp4" // replace with your video URL
           className="w-full h-full object-cover"
           autoPlay
           loop
